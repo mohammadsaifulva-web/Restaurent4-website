@@ -1,0 +1,266 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Contact — Saif Dining</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<style>
+/* CONTACT LAYOUT */
+.contact-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 70px; max-width: 1300px; margin: 0 auto; }
+.contact-left .s-tag { text-align: left; }
+.contact-left h2 { font-family: 'Playfair Display', serif; font-size: 46px; font-weight: 900; letter-spacing: -1.5px; color: white; margin-bottom: 18px; line-height: 1.15; text-align: left; }
+.contact-left h2 em { color: var(--accent); }
+.contact-left > p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 36px; }
+.contact-cards { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+.contact-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; display: flex; gap: 16px; align-items: center; transition: 0.3s; text-decoration: none; }
+.contact-card:hover { border-color: rgba(200,151,58,0.3); transform: translateX(4px); }
+.cc-icon { width: 50px; height: 50px; background: rgba(200,151,58,0.08); border: 1px solid rgba(200,151,58,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.cc-text h4 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 3px; }
+.cc-text p { font-size: 13px; color: var(--muted); }
+
+/* HOURS TABLE */
+.hours-table { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.hours-row { display: flex; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: center; transition: 0.2s; }
+.hours-row:last-child { border-bottom: none; }
+.hours-row:hover { background: rgba(200,151,58,0.03); }
+.hours-row .day { font-size: 14px; font-weight: 600; color: white; }
+.hours-row .time { font-size: 13px; color: var(--muted); }
+.hours-row .today { font-size: 11px; font-weight: 700; color: var(--green); background: rgba(74,124,89,0.1); border: 1px solid rgba(74,124,89,0.2); padding: 3px 10px; border-radius: 10px; }
+
+/* MAP PLACEHOLDER */
+.map-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; height: 280px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.map-box .map-icon { font-size: 60px; }
+.map-box h3 { font-size: 18px; font-weight: 700; color: white; }
+.map-box p { font-size: 13px; color: var(--muted); text-align: center; }
+
+/* SOCIAL LINKS */
+.social-links { display: flex; gap: 12px; }
+.social-btn-big { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; transition: 0.3s; font-size: 14px; font-weight: 600; color: white; }
+.social-btn-big:hover { border-color: rgba(200,151,58,0.3); background: rgba(200,151,58,0.06); }
+.social-btn-big .s-icon { font-size: 22px; }
+
+/* FAQ QUICK */
+.faq-quick { display: flex; flex-direction: column; gap: 12px; }
+.fq-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.fq-q { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; transition: 0.2s; }
+.fq-q:hover { background: rgba(255,255,255,0.02); }
+.fq-q h4 { font-size: 14px; font-weight: 600; color: white; padding-right: 16px; }
+.fq-toggle { width: 28px; height: 28px; background: rgba(200,151,58,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--accent); transition: 0.3s; flex-shrink: 0; }
+.fq-item.open .fq-toggle { transform: rotate(45deg); }
+.fq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.fq-a.open { max-height: 200px; }
+.fq-a p { padding: 0 20px 16px; font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+@media (max-width: 1024px) {
+    .contact-layout { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header"><h3>🛒 Your Order</h3><button class="cart-close" onclick="closeCart()">✕</button></div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">SAR 0.00</span></div>
+        <div class="cart-total"><span>Total</span><span id="cartTotal">SAR 0.00</span></div>
+        <button class="checkout-btn" onclick="showToast('✅ Order placed!')">Place Order 🍽️</button>
+    </div>
+</div>
+
+<nav id="navbar">
+    <div class="nav-inner">
+        <a href="index.html" class="logo"><div class="logo-icon">🍽️</div><div class="logo-text">Saif<span>Dining</span></div></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="reservations.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div style="display:flex;gap:12px;align-items:center">
+            <button onclick="openCart()" style="background:rgba(200,151,58,0.1);border:1px solid rgba(200,151,58,0.25);color:var(--accent);padding:10px 18px;border-radius:25px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px">🛒 Cart <span class="cart-count" style="background:var(--accent);color:var(--bg);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center"></span></button>
+            <a href="reservations.html" class="nav-cta">Reserve Table</a>
+        </div>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600&auto=format&fit=crop&q=80')"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+        <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span class="current">Contact</span></div>
+        <h1>Get In <span class="gold">Touch</span></h1>
+        <p>We would love to hear from you. Reach out and let us create something special together.</p>
+    </div>
+</section>
+
+<div class="marquee">
+    <div class="marquee-inner">
+        <span class="marquee-item">Get In Touch</span><span class="marquee-item">Call Us</span><span class="marquee-item">Visit Us</span><span class="marquee-item">Email Us</span><span class="marquee-item">Private Events</span>
+        <span class="marquee-item">Get In Touch</span><span class="marquee-item">Call Us</span><span class="marquee-item">Visit Us</span><span class="marquee-item">Email Us</span><span class="marquee-item">Private Events</span>
+    </div>
+</div>
+
+<!-- CONTACT SECTION -->
+<section class="sec sec-light">
+    <div class="contact-layout">
+
+        <!-- LEFT -->
+        <div class="reveal-l">
+            <span class="s-tag">Reach Out</span>
+            <h2>We'd Love to<br>Hear From <em>You</em></h2>
+            <p>Whether you have a question, want to book a private event, or simply want to share your experience — we are always here for you.</p>
+
+            <div class="contact-cards">
+                <a href="tel:+966110000000" class="contact-card"><div class="cc-icon">📞</div><div class="cc-text"><h4>Call Us</h4><p>+966 11 000 0000 — Daily 9AM-10PM</p></div></a>
+                <a href="mailto:hello@saifdining.sa" class="contact-card"><div class="cc-icon">📧</div><div class="cc-text"><h4>Email Us</h4><p>hello@saifdining.sa</p></div></a>
+                <a href="#" class="contact-card"><div class="cc-icon">📍</div><div class="cc-text"><h4>Visit Us</h4><p>Al Olaya District, Riyadh, Saudi Arabia</p></div></a>
+                <a href="#" class="contact-card"><div class="cc-icon">💬</div><div class="cc-text"><h4>WhatsApp</h4><p>+966 500 000 000 — Quick replies!</p></div></a>
+            </div>
+
+            <!-- MAP -->
+            <div class="map-box">
+                <span class="map-icon">🗺️</span>
+                <h3>Find Us in Riyadh</h3>
+                <p>Al Olaya District, Riyadh<br>Near King Fahd Road</p>
+                <a href="#" class="btn-outline">Open in Maps →</a>
+            </div>
+
+            <!-- SOCIAL -->
+            <div style="margin-bottom:28px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px">Follow Us</div>
+                <div class="social-links">
+                    <a href="#" class="social-btn-big"><span class="s-icon">📸</span>Instagram</a>
+                    <a href="#" class="social-btn-big"><span class="s-icon">🐦</span>Twitter</a>
+                    <a href="#" class="social-btn-big"><span class="s-icon">📘</span>Facebook</a>
+                </div>
+            </div>
+
+            <!-- HOURS TABLE -->
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px">Opening Hours</div>
+            <div class="hours-table">
+                <div class="hours-row"><span class="day">Monday</span><span class="time">12:00 PM — 11:00 PM</span></div>
+                <div class="hours-row"><span class="day">Tuesday</span><span class="time">12:00 PM — 11:00 PM</span></div>
+                <div class="hours-row"><span class="day">Wednesday</span><span class="time">12:00 PM — 11:00 PM</span></div>
+                <div class="hours-row"><span class="day">Thursday</span><span class="time">12:00 PM — 11:00 PM</span><span class="today">Today</span></div>
+                <div class="hours-row"><span class="day">Friday</span><span class="time">12:00 PM — 12:00 AM</span></div>
+                <div class="hours-row"><span class="day">Saturday</span><span class="time">12:00 PM — 12:00 AM</span></div>
+                <div class="hours-row"><span class="day">Sunday</span><span class="time">1:00 PM — 10:00 PM</span></div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="reveal-r">
+            <!-- CONTACT FORM -->
+            <div class="form-box" style="margin-bottom:30px">
+                <h3>💬 Send Us a Message</h3>
+                <div class="form-row">
+                    <div class="fg"><label>Full Name</label><input type="text" id="cName" placeholder="Ahmed Al-Rashid"></div>
+                    <div class="fg"><label>Phone</label><input type="tel" id="cPhone" placeholder="+966 500 000 000"></div>
+                </div>
+                <div class="fg"><label>Email</label><input type="email" id="cEmail" placeholder="ahmed@email.com"></div>
+                <div class="fg">
+                    <label>Subject</label>
+                    <select id="cSubject">
+                        <option>General Enquiry</option>
+                        <option>Reservation Request</option>
+                        <option>Private Event Booking</option>
+                        <option>Feedback & Reviews</option>
+                        <option>Dietary Requirements</option>
+                        <option>Press & Media</option>
+                        <option>Career Opportunities</option>
+                    </select>
+                </div>
+                <div class="fg"><label>Message</label><textarea id="cMessage" placeholder="Tell us how we can help you..."></textarea></div>
+                <button class="form-submit" onclick="sendContactMessage()">Send Message →</button>
+            </div>
+
+            <!-- PRIVATE EVENTS ENQUIRY -->
+            <div class="form-box" style="margin-bottom:30px">
+                <h3>🎭 Private Event Enquiry</h3>
+                <p style="font-size:14px;color:var(--muted);margin-bottom:22px;line-height:1.7">Planning a corporate dinner, birthday, anniversary or special celebration? Tell us about your event and we'll create a bespoke experience for you.</p>
+                <div class="form-row">
+                    <div class="fg"><label>Event Type</label><select><option>Corporate Dinner</option><option>Birthday</option><option>Anniversary</option><option>Wedding</option><option>Proposal</option><option>Other</option></select></div>
+                    <div class="fg"><label>Number of Guests</label><select><option>Up to 10</option><option>10-20</option><option>20-50</option><option>50+</option></select></div>
+                </div>
+                <div class="fg"><label>Preferred Date</label><input type="date" id="eventDate"></div>
+                <div class="fg"><label>Budget Per Person</label><select><option>SAR 200-400</option><option>SAR 400-600</option><option>SAR 600-800</option><option>SAR 800+</option></select></div>
+                <div class="fg"><label>Special Requirements</label><textarea placeholder="Menu preferences, decoration, audio/visual needs, dietary restrictions..."></textarea></div>
+                <button class="form-submit" onclick="sendEventEnquiry()">Send Event Enquiry →</button>
+            </div>
+
+            <!-- FAQ -->
+            <div style="font-size:16px;font-weight:700;color:white;margin-bottom:18px">Frequently Asked Questions</div>
+            <div class="faq-quick">
+                <div class="fq-item"><div class="fq-q" onclick="toggleFaq(this)"><h4>Do you have vegetarian and vegan options?</h4><div class="fq-toggle">+</div></div><div class="fq-a"><p>Yes! We have a dedicated vegetarian menu and can accommodate vegan requests with 24 hours notice. Please inform our team when making your reservation.</p></div></div>
+                <div class="fq-item"><div class="fq-q" onclick="toggleFaq(this)"><h4>Is there a dress code at Saif Dining?</h4><div class="fq-toggle">+</div></div><div class="fq-a"><p>We request smart casual to formal attire. Shorts, sportswear and flip-flops are not permitted. We want every guest to feel the elegance of the dining experience.</p></div></div>
+                <div class="fq-item"><div class="fq-q" onclick="toggleFaq(this)"><h4>How far in advance should I book?</h4><div class="fq-toggle">+</div></div><div class="fq-a"><p>We recommend booking at least 3-7 days in advance for weekend dining and 2-4 weeks for private events. Walk-ins are welcome but subject to availability.</p></div></div>
+                <div class="fq-item"><div class="fq-q" onclick="toggleFaq(this)"><h4>Do you cater for large groups?</h4><div class="fq-toggle">+</div></div><div class="fq-a"><p>Absolutely! Our private dining room accommodates up to 20 guests, and we can arrange exclusive buyouts of the full restaurant for groups of 50+. Contact us directly.</p></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-top">
+        <div><a href="index.html" class="logo" style="display:inline-flex;margin-bottom:14px"><div class="logo-icon">🍽️</div><div class="logo-text">Saif<span>Dining</span></div></a><p style="font-size:14px;color:var(--muted);line-height:1.8;margin-top:12px">Riyadh's finest fine dining. Award-winning cuisine since 2010.</p></div>
+        <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="reservations.html">Reservations</a><a href="contact.html">Contact</a></div>
+        <div class="footer-col"><h4>Hours</h4><a href="#">Mon-Thu: 12PM-11PM</a><a href="#">Fri-Sat: 12PM-12AM</a><a href="#">Sunday: 1PM-10PM</a></div>
+        <div class="footer-col"><h4>Contact</h4><a href="#">📍 Al Olaya, Riyadh</a><a href="#">📞 +966 11 000 0000</a><a href="#">📧 hello@saifdining.sa</a></div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 <span>Saif Dining</span>. All Rights Reserved.</p>
+        <p>Built by <span>Saiful Islam</span> — Creative Saif</p>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// CONTACT FORM
+function sendContactMessage() {
+    const name = document.getElementById('cName').value;
+    const email = document.getElementById('cEmail').value;
+    const msg = document.getElementById('cMessage').value;
+    if (!name || !email || !msg) { showToast('⚠️ Please fill all required fields!'); return; }
+    showToast('✅ Message sent! We will reply within 24 hours.');
+    document.getElementById('cName').value = '';
+    document.getElementById('cEmail').value = '';
+    document.getElementById('cPhone').value = '';
+    document.getElementById('cMessage').value = '';
+}
+
+// EVENT ENQUIRY
+function sendEventEnquiry() {
+    showToast('🎭 Event enquiry sent! Our events team will contact you shortly.');
+}
+
+// FAQ TOGGLE
+function toggleFaq(el) {
+    const item = el.closest('.fq-item');
+    const answer = item.querySelector('.fq-a');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.fq-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.fq-a').classList.remove('open');
+    });
+    if (!isOpen) { item.classList.add('open'); answer.classList.add('open'); }
+}
+
+// HIGHLIGHT TODAY'S HOURS
+const today = new Date().getDay();
+const rows = document.querySelectorAll('.hours-row');
+rows.forEach(row => row.querySelector('.today')?.remove());
+if (rows[today === 0 ? 6 : today - 1]) {
+    const badge = document.createElement('span');
+    badge.className = 'today';
+    badge.textContent = 'Today';
+    rows[today === 0 ? 6 : today - 1].appendChild(badge);
+}
+</script>
+</body>
+</html>
+ 
+ 

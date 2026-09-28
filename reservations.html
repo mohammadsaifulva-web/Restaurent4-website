@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Reservations — Saif Dining</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<style>
+/* RESERVATION FORM */
+.res-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1300px; margin: 0 auto; align-items: start; }
+.res-left .s-tag { text-align: left; }
+.res-left h2 { font-family: 'Playfair Display', serif; font-size: 46px; font-weight: 900; letter-spacing: -1.5px; color: white; margin-bottom: 18px; line-height: 1.1; text-align: left; }
+.res-left h2 em { color: var(--accent); }
+.res-left > p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 32px; }
+.res-info-items { display: flex; flex-direction: column; gap: 18px; margin-bottom: 32px; }
+.res-info-item { display: flex; gap: 14px; align-items: flex-start; }
+.ri-icon { width: 48px; height: 48px; background: rgba(200,151,58,0.08); border: 1px solid rgba(200,151,58,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; transition: 0.3s; }
+.res-info-item:hover .ri-icon { background: rgba(200,151,58,0.15); }
+.ri-text h4 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 3px; }
+.ri-text p { font-size: 13px; color: var(--muted); }
+
+/* TABLE SELECTOR */
+.table-selector { margin-bottom: 20px; }
+.table-selector label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.table-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.table-opt { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; transition: 0.3s; }
+.table-opt.selected { border-color: var(--accent); background: rgba(200,151,58,0.08); }
+.table-opt:hover { border-color: rgba(200,151,58,0.3); }
+.table-opt .t-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+.table-opt .t-label { font-size: 12px; color: white; font-weight: 600; }
+.table-opt .t-cap { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* OCCASION SELECTOR */
+.occasion-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.occ-btn { padding: 8px 18px; background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.3s; }
+.occ-btn.selected { background: rgba(200,151,58,0.1); border-color: var(--accent); color: var(--accent); }
+.occ-btn:hover { border-color: rgba(200,151,58,0.3); color: white; }
+
+/* AVAILABILITY CALENDAR */
+.availability-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 18px; }
+.availability-strip::-webkit-scrollbar { height: 3px; }
+.avail-day { min-width: 70px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
+.avail-day.selected { border-color: var(--accent); background: rgba(200,151,58,0.08); }
+.avail-day:hover { border-color: rgba(200,151,58,0.3); }
+.avail-day .ad-day { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.avail-day .ad-date { font-size: 20px; font-weight: 800; color: white; margin-bottom: 4px; }
+.avail-day .ad-avail { font-size: 10px; color: var(--green); font-weight: 600; }
+.avail-day.full .ad-avail { color: var(--red); }
+
+/* TIME SLOTS */
+.time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.time-slot { padding: 10px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; color: white; transition: 0.3s; }
+.time-slot.selected { border-color: var(--accent); background: rgba(200,151,58,0.1); color: var(--accent); }
+.time-slot:hover { border-color: rgba(200,151,58,0.3); }
+.time-slot.unavailable { opacity: 0.35; cursor: not-allowed; background: rgba(255,255,255,0.02); }
+
+/* CONFIRMATION */
+.confirmation-box { background: rgba(74,124,89,0.1); border: 1px solid rgba(74,124,89,0.3); border-radius: 16px; padding: 24px; margin-top: 20px; display: none; }
+.confirmation-box.show { display: block; }
+.confirmation-box h4 { font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.confirmation-box p { font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.6; }
+.conf-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.conf-detail { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; }
+.conf-detail h5 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.conf-detail p { font-size: 14px; font-weight: 700; color: white; }
+
+/* PRIVATE DINING */
+.private-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; }
+.private-img { height: 300px; }
+.private-img img { width: 100%; height: 100%; object-fit: cover; }
+.private-info { padding: 36px; }
+.private-info h3 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: white; margin-bottom: 12px; }
+.private-info p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+.private-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.pf-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.7); }
+.pf-check { color: var(--accent); font-weight: 700; }
+
+@media (max-width: 1024px) {
+    .res-layout { grid-template-columns: 1fr; }
+    .private-card { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .table-options { grid-template-columns: repeat(2, 1fr); }
+    .time-slots { grid-template-columns: repeat(3, 1fr); }
+    .conf-details { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header"><h3>🛒 Your Order</h3><button class="cart-close" onclick="closeCart()">✕</button></div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">SAR 0.00</span></div>
+        <div class="cart-total"><span>Total</span><span id="cartTotal">SAR 0.00</span></div>
+        <button class="checkout-btn" onclick="showToast('✅ Order placed!')">Place Order 🍽️</button>
+    </div>
+</div>
+
+<nav id="navbar">
+    <div class="nav-inner">
+        <a href="index.html" class="logo"><div class="logo-icon">🍽️</div><div class="logo-text">Saif<span>Dining</span></div></a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="reservations.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div style="display:flex;gap:12px;align-items:center">
+            <button onclick="openCart()" style="background:rgba(200,151,58,0.1);border:1px solid rgba(200,151,58,0.25);color:var(--accent);padding:10px 18px;border-radius:25px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px">🛒 Cart <span class="cart-count" style="background:var(--accent);color:var(--bg);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center"></span></button>
+            <a href="reservations.html" class="nav-cta">Reserve Table</a>
+        </div>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600&auto=format&fit=crop&q=80')"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+        <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span class="current">Reservations</span></div>
+        <h1>Reserve Your <span class="gold">Table</span></h1>
+        <p>Book your exceptional dining experience at Saif Dining</p>
+    </div>
+</section>
+
+<div class="marquee">
+    <div class="marquee-inner">
+        <span class="marquee-item">Reserve Now</span><span class="marquee-item">Private Dining</span><span class="marquee-item">Special Events</span><span class="marquee-item">Chef's Table</span><span class="marquee-item">Wine Pairing</span>
+        <span class="marquee-item">Reserve Now</span><span class="marquee-item">Private Dining</span><span class="marquee-item">Special Events</span><span class="marquee-item">Chef's Table</span><span class="marquee-item">Wine Pairing</span>
+    </div>
+</div>
+
+<!-- RESERVATION SECTION -->
+<section class="sec sec-light">
+    <div class="res-layout">
+        <div class="res-left reveal-l">
+            <span class="s-tag">Book Your Experience</span>
+            <h2>Reserve Your<br><em>Perfect Evening</em></h2>
+            <p>Whether it is an intimate dinner for two or a grand celebration, we create unforgettable experiences tailored exactly to your wishes.</p>
+            <div class="res-info-items">
+                <div class="res-info-item"><div class="ri-icon">🕐</div><div class="ri-text"><h4>Opening Hours</h4><p>Mon-Thu: 12PM-11PM • Fri-Sat: 12PM-12AM • Sun: 1PM-10PM</p></div></div>
+                <div class="res-info-item"><div class="ri-icon">📞</div><div class="ri-text"><h4>Phone Reservation</h4><p>+966 11 000 0000 — Available 9AM-10PM daily</p></div></div>
+                <div class="res-info-item"><div class="ri-icon">👔</div><div class="ri-text"><h4>Dress Code</h4><p>Smart casual to formal. No shorts or sportswear please.</p></div></div>
+                <div class="res-info-item"><div class="ri-icon">⚠️</div><div class="ri-text"><h4>Cancellation Policy</h4><p>Cancel up to 24 hours before. Late cancellations may incur a fee.</p></div></div>
+            </div>
+            <!-- ATMOSPHERE PHOTOS -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80" alt="Dining" style="width:100%;height:140px;object-fit:cover;border-radius:14px;border:1px solid var(--border)">
+                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=80" alt="Dining" style="width:100%;height:140px;object-fit:cover;border-radius:14px;border:1px solid var(--border)">
+            </div>
+        </div>
+
+        <!-- FORM -->
+        <div class="reveal-r">
+            <div class="form-box">
+                <h3>🗓️ Book Your Table</h3>
+
+                <!-- TABLE TYPE -->
+                <div class="table-selector">
+                    <label>Select Table Type</label>
+                    <div class="table-options">
+                        <div class="table-opt selected" onclick="selectTable(this,'Intimate Table for 2')"><span class="t-icon">💑</span><div class="t-label">Intimate</div><div class="t-cap">2 Guests</div></div>
+                        <div class="table-opt" onclick="selectTable(this,'Family Table')"><span class="t-icon">👨‍👩‍👧‍👦</span><div class="t-label">Family</div><div class="t-cap">3-6 Guests</div></div>
+                        <div class="table-opt" onclick="selectTable(this,'Group Table')"><span class="t-icon">👥</span><div class="t-label">Group</div><div class="t-cap">7-12 Guests</div></div>
+                        <div class="table-opt" onclick="selectTable(this,'Private Room')"><span class="t-icon">🎭</span><div class="t-label">Private</div><div class="t-cap">Up to 20</div></div>
+                    </div>
+                </div>
+
+                <!-- DATE PICKER -->
+                <div class="fg">
+                    <label>Select Date</label>
+                    <div class="availability-strip" id="dateStrip"></div>
+                </div>
+
+                <!-- TIME SLOTS -->
+                <div class="fg">
+                    <label>Select Time</label>
+                    <div class="time-slots" id="timeSlots"></div>
+                </div>
+
+                <!-- GUESTS -->
+                <div class="form-row">
+                    <div class="fg">
+                        <label>Number of Guests</label>
+                        <select id="resGuests">
+                            <option>1 Guest</option>
+                            <option selected>2 Guests</option>
+                            <option>3 Guests</option>
+                            <option>4 Guests</option>
+                            <option>5 Guests</option>
+                            <option>6 Guests</option>
+                            <option>7-10 Guests</option>
+                            <option>10+ Guests</option>
+                        </select>
+                    </div>
+                    <div class="fg">
+                        <label>Occasion</label>
+                        <select id="resOccasion">
+                            <option>Regular Dining</option>
+                            <option>Birthday</option>
+                            <option>Anniversary</option>
+                            <option>Business Dinner</option>
+                            <option>Proposal</option>
+                            <option>Family Gathering</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PERSONAL DETAILS -->
+                <div class="form-row">
+                    <div class="fg"><label>Full Name</label><input type="text" id="resName" placeholder="Ahmed Al-Rashid"></div>
+                    <div class="fg"><label>Phone</label><input type="tel" id="resPhone" placeholder="+966 500 000 000"></div>
+                </div>
+                <div class="fg"><label>Email</label><input type="email" id="resEmail" placeholder="ahmed@email.com"></div>
+                <div class="fg"><label>Special Requests</label><textarea id="resNotes" placeholder="Dietary requirements, allergies, special setup requests..."></textarea></div>
+
+                <button class="form-submit" onclick="makeReservation()">Confirm Reservation 🍽️</button>
+
+                <!-- CONFIRMATION BOX -->
+                <div class="confirmation-box" id="confirmBox">
+                    <h4>✅ Reservation Confirmed!</h4>
+                    <p>Your table has been reserved. A confirmation email will be sent shortly. We look forward to welcoming you!</p>
+                    <div class="conf-details">
+                        <div class="conf-detail"><h5>Date</h5><p id="confDate">—</p></div>
+                        <div class="conf-detail"><h5>Time</h5><p id="confTime">—</p></div>
+                        <div class="conf-detail"><h5>Guests</h5><p id="confGuests">—</p></div>
+                        <div class="conf-detail"><h5>Table Type</h5><p id="confTable">—</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRIVATE DINING -->
+<section class="sec sec-dark">
+    <div class="sec-inner">
+        <div class="section-hd reveal">
+            <span class="s-tag">Exclusive Experience</span>
+            <h2>Private <em>Dining Room</em></h2>
+            <p>Reserve our exclusive private room for your most special occasions</p>
+        </div>
+        <div class="private-card reveal">
+            <div class="private-img">
+                <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&auto=format&fit=crop&q=80" alt="Private Dining">
+            </div>
+            <div class="private-info">
+                <h3>The Grand Private Suite</h3>
+                <p>Our beautifully appointed private dining room seats up to 20 guests in an atmosphere of total exclusivity. Perfect for business dinners, proposals, anniversary celebrations and intimate gatherings.</p>
+                <div class="private-features">
+                    <div class="pf-item"><span class="pf-check">✦</span>Seats up to 20 guests comfortably</div>
+                    <div class="pf-item"><span class="pf-check">✦</span>Dedicated private butler service</div>
+                    <div class="pf-item"><span class="pf-check">✦</span>Customized menu by Executive Chef</div>
+                    <div class="pf-item"><span class="pf-check">✦</span>Premium wine pairing available</div>
+                    <div class="pf-item"><span class="pf-check">✦</span>Audio/Visual system for presentations</div>
+                    <div class="pf-item"><span class="pf-check">✦</span>Floral arrangement & decoration service</div>
+                </div>
+                <a href="contact.html" class="btn-gold">Enquire About Private Dining →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-top">
+        <div><a href="index.html" class="logo" style="display:inline-flex;margin-bottom:14px"><div class="logo-icon">🍽️</div><div class="logo-text">Saif<span>Dining</span></div></a><p style="font-size:14px;color:var(--muted);line-height:1.8;margin-top:12px">Riyadh's finest fine dining. Award-winning cuisine since 2010.</p></div>
+        <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="reservations.html">Reservations</a><a href="contact.html">Contact</a></div>
+        <div class="footer-col"><h4>Hours</h4><a href="#">Mon-Thu: 12PM-11PM</a><a href="#">Fri-Sat: 12PM-12AM</a><a href="#">Sunday: 1PM-10PM</a></div>
+        <div class="footer-col"><h4>Contact</h4><a href="#">📍 Al Olaya, Riyadh</a><a href="#">📞 +966 11 000 0000</a><a href="#">📧 hello@saifdining.sa</a></div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 <span>Saif Dining</span>. All Rights Reserved.</p>
+        <p>Built by <span>Saiful Islam</span> — Creative Saif</p>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// AVAILABILITY CALENDAR
+const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let selectedDate = '';
+let selectedTime = '';
+let selectedTable = 'Intimate Table for 2';
+
+function buildCalendar() {
+    const strip = document.getElementById('dateStrip');
+    const today = new Date();
+    strip.innerHTML = '';
+    for (let i = 0; i < 14; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const isFull = Math.random() < 0.2;
+        const dateStr = `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+        const div = document.createElement('div');
+        div.className = 'avail-day' + (isFull ? ' full' : '') + (i === 0 ? ' selected' : '');
+        div.innerHTML = `<div class="ad-day">${days[d.getDay()]}</div><div class="ad-date">${d.getDate()}</div><div class="ad-avail">${isFull ? 'Full' : 'Available'}</div>`;
+        if (!isFull) {
+            div.onclick = () => {
+                document.querySelectorAll('.avail-day').forEach(x => x.classList.remove('selected'));
+                div.classList.add('selected');
+                selectedDate = dateStr;
+            };
+        }
+        strip.appendChild(div);
+        if (i === 0) selectedDate = dateStr;
+    }
+}
+
+// TIME SLOTS
+const times = ['12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+const unavailable = ['1:30 PM', '8:00 PM', '9:30 PM'];
+
+function buildTimeSlots() {
+    const container = document.getElementById('timeSlots');
+    container.innerHTML = times.map((t, i) => {
+        const isUnavail = unavailable.includes(t);
+        return `<div class="time-slot ${isUnavail ? 'unavailable' : ''} ${i === 0 ? 'selected' : ''}" onclick="${isUnavail ? '' : `selectTime(this,'${t}')`}">${t}</div>`;
+    }).join('');
+    selectedTime = times[0];
+}
+
+function selectTime(el, time) {
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTime = time;
+}
+
+function selectTable(el, type) {
+    document.querySelectorAll('.table-opt').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTable = type;
+}
+
+// MAKE RESERVATION
+function makeReservation() {
+    const name = document.getElementById('resName').value;
+    const phone = document.getElementById('resPhone').value;
+    const email = document.getElementById('resEmail').value;
+    const guests = document.getElementById('resGuests').value;
+
+    if (!name || !phone || !email) {
+        showToast('⚠️ Please fill all required fields!');
+        return;
+    }
+
+    document.getElementById('confDate').textContent = selectedDate;
+    document.getElementById('confTime').textContent = selectedTime;
+    document.getElementById('confGuests').textContent = guests;
+    document.getElementById('confTable').textContent = selectedTable;
+
+    const box = document.getElementById('confirmBox');
+    box.classList.add('show');
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast('🎉 Reservation confirmed! See you soon!');
+
+    // Reset form
+    document.getElementById('resName').value = '';
+    document.getElementById('resPhone').value = '';
+    document.getElementById('resEmail').value = '';
+    document.getElementById('resNotes').value = '';
+}
+
+buildCalendar();
+buildTimeSlots();
+</script>
+</body>
+</html>

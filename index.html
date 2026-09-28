@@ -1,0 +1,495 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Saif Dining — Fine Dining Restaurant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<style>
+/* HERO */
+.hero {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+.hero-slider { position: absolute; inset: 0; }
+.hero-slide {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.5s ease;
+    animation: zoomIn 10s ease-in-out infinite alternate;
+}
+.hero-slide.active { opacity: 1; }
+.hero-slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&auto=format&fit=crop&q=80'); }
+.hero-slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&auto=format&fit=crop&q=80'); }
+.hero-slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1600&auto=format&fit=crop&q=80'); }
+.hero-slide:nth-child(4) { background-image: url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600&auto=format&fit=crop&q=80'); }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(110deg, rgba(10,7,0,0.92) 0%, rgba(10,7,0,0.7) 55%, rgba(10,7,0,0.45) 100%); z-index: 1; }
+.hero-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 52px; height: 52px; background: rgba(200,151,58,0.12); border: 1px solid rgba(200,151,58,0.3); color: var(--accent); border-radius: 50%; font-size: 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+.hero-arrow:hover { background: var(--accent); color: var(--bg); }
+.hero-arrow.prev { left: 30px; }
+.hero-arrow.next { right: 30px; }
+.hero-dots { position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 3; }
+.hero-dot { width: 8px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 50%; cursor: pointer; transition: 0.4s; }
+.hero-dot.active { background: var(--accent); width: 28px; border-radius: 4px; }
+.hero-content { position: relative; z-index: 2; max-width: 1300px; margin: 0 auto; padding: 0 70px; width: 100%; }
+.hero-tag { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: rgba(200,151,58,0.1); border: 1px solid rgba(200,151,58,0.3); border-radius: 25px; font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 24px; letter-spacing: 1.5px; text-transform: uppercase; }
+.tag-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: 90px; font-weight: 900; line-height: 1; letter-spacing: -3px; margin-bottom: 22px; color: white; }
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero-desc { font-size: 18px; color: rgba(255,255,255,0.65); line-height: 1.8; max-width: 520px; margin-bottom: 42px; }
+.hero-btns { display: flex; gap: 14px; margin-bottom: 60px; flex-wrap: wrap; }
+.hero-stats { display: flex; gap: 45px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
+.h-stat h3 { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; color: var(--accent); letter-spacing: -1.5px; margin-bottom: 4px; }
+.h-stat p { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; }
+
+/* FEATURED DISHES */
+.featured-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+/* EXPERIENCE */
+.exp-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.exp-img-wrap { position: relative; }
+.exp-img-main { width: 100%; height: 560px; object-fit: cover; border-radius: 24px; border: 1px solid var(--border); }
+.exp-badge { position: absolute; bottom: -20px; right: -20px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 18px; padding: 22px 28px; text-align: center; box-shadow: 0 15px 40px rgba(200,151,58,0.3); }
+.exp-badge h3 { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; color: var(--bg); }
+.exp-badge p { font-size: 11px; color: rgba(0,0,0,0.6); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.exp-float { position: absolute; top: 24px; left: -24px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); animation: float 4s ease-in-out infinite; }
+.ef-icon { font-size: 28px; }
+.ef-text h4 { font-size: 14px; font-weight: 700; color: white; }
+.ef-text p { font-size: 12px; color: var(--muted); }
+.exp-right .s-tag { text-align: left; }
+.exp-right h2 { font-family: 'Playfair Display', serif; font-size: 46px; font-weight: 900; letter-spacing: -1.5px; color: white; margin-bottom: 18px; text-align: left; line-height: 1.1; }
+.exp-right h2 em { font-style: italic; color: var(--accent); }
+.exp-right > p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 30px; }
+.exp-features { display: flex; flex-direction: column; gap: 18px; margin-bottom: 36px; }
+.exp-feature { display: flex; gap: 14px; align-items: flex-start; }
+.ef-dot { width: 44px; height: 44px; background: rgba(200,151,58,0.08); border: 1px solid rgba(200,151,58,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; transition: 0.3s; }
+.exp-feature:hover .ef-dot { background: rgba(200,151,58,0.15); }
+.ef-info h4 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px; }
+.ef-info p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* CHEFS */
+.chefs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.chef-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; transition: 0.4s; }
+.chef-card:hover { transform: translateY(-8px); border-color: rgba(200,151,58,0.3); box-shadow: 0 20px 50px rgba(200,151,58,0.08); }
+.chef-img { height: 320px; overflow: hidden; position: relative; }
+.chef-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.chef-card:hover .chef-img img { transform: scale(1.06); }
+.chef-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,7,0,0.9) 0%, transparent 50%); display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; }
+.chef-info h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: white; margin-bottom: 4px; }
+.chef-role { font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+.chef-info p { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
+/* TESTIMONIALS */
+.t-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.t-card { background: var(--card); border: 1px solid var(--border); padding: 32px; border-radius: 20px; position: relative; transition: 0.3s; }
+.t-card:hover { border-color: rgba(200,151,58,0.3); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(200,151,58,0.08); }
+.t-card::before { content: '"'; font-family: 'Playfair Display', serif; font-size: 90px; color: var(--accent); opacity: 0.08; position: absolute; top: 0; left: 18px; line-height: 1; }
+.t-stars { color: var(--accent); font-size: 15px; margin-bottom: 14px; }
+.t-card p { font-size: 14px; color: var(--muted); line-height: 1.8; margin-bottom: 22px; font-style: italic; }
+.t-auth { display: flex; align-items: center; gap: 12px; padding-top: 18px; border-top: 1px solid var(--border); }
+.t-av { width: 46px; height: 46px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--bg); font-size: 18px; }
+.t-name { font-size: 14px; font-weight: 700; color: white; }
+.t-loc { font-size: 12px; color: var(--muted); }
+
+/* RESERVATION CTA */
+.res-cta { padding: 100px 70px; position: relative; overflow: hidden; text-align: center; }
+.res-cta-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=1600&auto=format&fit=crop&q=80') center/cover; }
+.res-cta-overlay { position: absolute; inset: 0; background: rgba(10,7,0,0.87); }
+.res-cta-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+.res-cta-inner h2 { font-family: 'Playfair Display', serif; font-size: 56px; font-weight: 900; letter-spacing: -2px; color: white; margin-bottom: 18px; line-height: 1.1; }
+.res-cta-inner h2 em { font-style: italic; color: var(--accent); }
+.res-cta-inner p { font-size: 18px; color: rgba(255,255,255,0.6); margin-bottom: 40px; line-height: 1.8; }
+.res-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* STATS BAR */
+.stats-bar { padding: 70px 70px; background: linear-gradient(135deg, #0f0a00, #1a1200); border-top: 1px solid rgba(200,151,58,0.1); border-bottom: 1px solid rgba(200,151,58,0.1); }
+.stats-inner { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+.stat-col { padding: 30px; text-align: center; border-right: 1px solid rgba(255,255,255,0.05); }
+.stat-col:last-child { border-right: none; }
+.stat-icon { font-size: 40px; margin-bottom: 14px; display: block; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; color: var(--accent); letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
+.stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+
+@media (max-width: 768px) {
+    .hero-content { padding: 0 20px; }
+    .hero h1 { font-size: 48px; }
+    .hero-stats { gap: 22px; }
+    .hero-arrow { display: none; }
+    .featured-grid { grid-template-columns: 1fr; }
+    .exp-layout { grid-template-columns: 1fr; gap: 50px; }
+    .exp-badge { right: 0; bottom: -15px; }
+    .exp-float { left: 0; }
+    .chefs-grid { grid-template-columns: 1fr; }
+    .t-grid { grid-template-columns: 1fr; }
+    .stats-bar { padding: 50px 20px; }
+    .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .res-cta { padding: 70px 20px; }
+    .res-cta-inner h2 { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+        <h3>🛒 Your Order</h3>
+        <button class="cart-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">SAR 0.00</span></div>
+        <div class="cart-subtotal"><span>Delivery</span><span style="color:var(--green)">Free over SAR 150</span></div>
+        <div class="cart-total"><span>Total</span><span id="cartTotal">SAR 0.00</span></div>
+        <button class="checkout-btn" onclick="showToast('✅ Order placed! We will call you shortly.')">Place Order 🍽️</button>
+    </div>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+    <div class="nav-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🍽️</div>
+            <div class="logo-text">Saif<span>Dining</span></div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="reservations.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div style="display:flex;gap:12px;align-items:center">
+            <button onclick="openCart()" style="position:relative;background:rgba(200,151,58,0.1);border:1px solid rgba(200,151,58,0.25);color:var(--accent);padding:10px 18px;border-radius:25px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:0.3s" onmouseover="this.style.background='rgba(200,151,58,0.2)'" onmouseout="this.style.background='rgba(200,151,58,0.1)'">
+                🛒 Cart
+                <span class="cart-count" style="background:var(--accent);color:var(--bg);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center"></span>
+            </button>
+            <a href="reservations.html" class="nav-cta">Reserve Table</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+    <div class="hero-slider">
+        <div class="hero-slide active"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+    </div>
+    <div class="hero-overlay"></div>
+    <button class="hero-arrow prev" onclick="changeHeroSlide(-1)">❮</button>
+    <button class="hero-arrow next" onclick="changeHeroSlide(1)">❯</button>
+    <div class="hero-dots" id="heroDots">
+        <div class="hero-dot active" onclick="goToSlide(0)"></div>
+        <div class="hero-dot" onclick="goToSlide(1)"></div>
+        <div class="hero-dot" onclick="goToSlide(2)"></div>
+        <div class="hero-dot" onclick="goToSlide(3)"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-tag"><div class="tag-dot"></div>⭐ Michelin Starred Restaurant — Riyadh</div>
+        <h1>A Culinary<br><em>Journey</em><br>Like No Other</h1>
+        <p class="hero-desc">Experience world-class fine dining in the heart of Riyadh. Where every dish tells a story and every moment becomes a memory.</p>
+        <div class="hero-btns">
+            <a href="menu.html" class="btn-gold">Explore Our Menu →</a>
+            <a href="reservations.html" class="btn-white">Reserve Your Table</a>
+        </div>
+        <div class="hero-stats">
+            <div class="h-stat"><h3 class="counter" data-target="15" data-suffix="+">0</h3><p>Years of Excellence</p></div>
+            <div class="h-stat"><h3 class="counter" data-target="50" data-suffix="+">0</h3><p>Signature Dishes</p></div>
+            <div class="h-stat"><h3 class="counter" data-target="10000" data-suffix="+">0</h3><p>Happy Guests</p></div>
+            <div class="h-stat"><h3 class="counter" data-target="3" data-suffix="★">0</h3><p>Michelin Stars</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+    <div class="marquee-inner">
+        <span class="marquee-item">Fine Dining</span>
+        <span class="marquee-item">Fresh Ingredients</span>
+        <span class="marquee-item">Expert Chefs</span>
+        <span class="marquee-item">Private Events</span>
+        <span class="marquee-item">Michelin Starred</span>
+        <span class="marquee-item">Fine Dining</span>
+        <span class="marquee-item">Fresh Ingredients</span>
+        <span class="marquee-item">Expert Chefs</span>
+        <span class="marquee-item">Private Events</span>
+        <span class="marquee-item">Michelin Starred</span>
+    </div>
+</div>
+
+<!-- FEATURED DISHES -->
+<section class="sec sec-dark">
+    <div class="sec-inner">
+        <div class="section-hd reveal">
+            <span class="s-tag">Chef's Selection</span>
+            <h2>Featured <em>Dishes</em></h2>
+            <p>Handpicked signature dishes from our award-winning kitchen</p>
+        </div>
+        <div class="featured-grid">
+            <div class="dish-card reveal">
+                <div class="dish-img">
+                    <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80" alt="Wagyu">
+                    <span class="dish-badge badge-chef">Chef's Special</span>
+                </div>
+                <div class="dish-info">
+                    <h3>Japanese A5 Wagyu</h3>
+                    <p class="dish-desc">Premium A5 Wagyu beef with truffle jus, roasted vegetables and red wine reduction.</p>
+                    <div class="dish-footer">
+                        <span class="dish-price">SAR 285</span>
+                        <button class="dish-add" onclick="addToCart('Japanese A5 Wagyu', 285, 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=200')">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="dish-card reveal">
+                <div class="dish-img">
+                    <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&auto=format&fit=crop&q=80" alt="Lobster">
+                    <span class="dish-badge badge-popular">Most Popular</span>
+                </div>
+                <div class="dish-info">
+                    <h3>Butter Poached Lobster</h3>
+                    <p class="dish-desc">Atlantic lobster tail with saffron bisque, caviar and microherbs.</p>
+                    <div class="dish-footer">
+                        <span class="dish-price">SAR 320</span>
+                        <button class="dish-add" onclick="addToCart('Butter Poached Lobster', 320, 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200')">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="dish-card reveal">
+                <div class="dish-img">
+                    <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80" alt="Pasta">
+                    <span class="dish-badge badge-new">New</span>
+                </div>
+                <div class="dish-info">
+                    <h3>Black Truffle Pasta</h3>
+                    <p class="dish-desc">Handmade tagliolini with shaved black truffle, aged parmesan and cream.</p>
+                    <div class="dish-footer">
+                        <span class="dish-price">SAR 195</span>
+                        <button class="dish-add" onclick="addToCart('Black Truffle Pasta', 195, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=200')">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:center;margin-top:45px">
+            <a href="menu.html" class="btn-outline">View Full Menu →</a>
+        </div>
+    </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="sec sec-light">
+    <div class="sec-inner">
+        <div class="exp-layout">
+            <div class="exp-img-wrap reveal-l">
+                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&auto=format&fit=crop&q=80" alt="Restaurant" class="exp-img-main">
+                <div class="exp-badge"><h3>15+</h3><p>Years of Mastery</p></div>
+                <div class="exp-float">
+                    <div class="ef-icon">⭐</div>
+                    <div class="ef-text"><h4>Michelin 3 Stars</h4><p>Since 2018</p></div>
+                </div>
+            </div>
+            <div class="exp-right reveal-r">
+                <span class="s-tag">Our Philosophy</span>
+                <h2>Where Passion<br>Meets <em>Perfection</em></h2>
+                <p>At Saif Dining, we believe every meal is an art form. Our team of world-renowned chefs sources the finest ingredients from around the globe to craft experiences that transcend ordinary dining.</p>
+                <div class="exp-features">
+                    <div class="exp-feature"><div class="ef-dot">🌿</div><div class="ef-info"><h4>Farm to Table</h4><p>Fresh ingredients sourced daily from local and international farms.</p></div></div>
+                    <div class="exp-feature"><div class="ef-dot">👨‍🍳</div><div class="ef-info"><h4>Master Chefs</h4><p>Our kitchen team trained in Paris, Tokyo and New York.</p></div></div>
+                    <div class="exp-feature"><div class="ef-dot">🍷</div><div class="ef-info"><h4>Premium Wine Cellar</h4><p>Over 500 curated wines from the world's finest vineyards.</p></div></div>
+                    <div class="exp-feature"><div class="ef-dot">🎭</div><div class="ef-info"><h4>Private Events</h4><p>Bespoke dining experiences for corporate and personal celebrations.</p></div></div>
+                </div>
+                <div style="display:flex;gap:14px;flex-wrap:wrap">
+                    <a href="about.html" class="btn-gold">Our Story →</a>
+                    <a href="reservations.html" class="btn-outline">Make Reservation</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS BAR -->
+<section class="stats-bar">
+    <div class="stats-inner">
+        <div class="stat-col"><span class="stat-icon">🍽️</span><div class="stat-num" data-target="50" data-suffix="+">0</div><div class="stat-label">Signature Dishes</div></div>
+        <div class="stat-col"><span class="stat-icon">👥</span><div class="stat-num" data-target="10000" data-suffix="+">0</div><div class="stat-label">Happy Guests</div></div>
+        <div class="stat-col"><span class="stat-icon">🏆</span><div class="stat-num" data-target="48" data-suffix="+">0</div><div class="stat-label">Awards Won</div></div>
+        <div class="stat-col"><span class="stat-icon">👨‍🍳</span><div class="stat-num" data-target="12" data-suffix="">0</div><div class="stat-label">Expert Chefs</div></div>
+    </div>
+</section>
+
+<!-- CHEFS -->
+<section class="sec sec-dark">
+    <div class="sec-inner">
+        <div class="section-hd reveal">
+            <span class="s-tag">Our Team</span>
+            <h2>Meet The <em>Chefs</em></h2>
+            <p>World-class culinary artists behind every extraordinary dish</p>
+        </div>
+        <div class="chefs-grid">
+            <div class="chef-card reveal">
+                <div class="chef-img">
+                    <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&auto=format&fit=crop&q=80" alt="Chef">
+                    <div class="chef-overlay">
+                        <div class="chef-info">
+                            <h3>Chef Ahmed Al-Rashid</h3>
+                            <span class="chef-role">Executive Chef</span>
+                            <p>15 years of culinary mastery. Trained in Paris & Tokyo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chef-card reveal">
+                <div class="chef-img">
+                    <img src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=600&auto=format&fit=crop&q=80" alt="Chef">
+                    <div class="chef-overlay">
+                        <div class="chef-info">
+                            <h3>Chef Sofia Martinez</h3>
+                            <span class="chef-role">Pastry Chef</span>
+                            <p>Award-winning dessert artist. Expert in French patisserie.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chef-card reveal">
+                <div class="chef-img">
+                    <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=600&auto=format&fit=crop&q=80" alt="Chef">
+                    <div class="chef-overlay">
+                        <div class="chef-info">
+                            <h3>Chef Kenji Tanaka</h3>
+                            <span class="chef-role">Sous Chef</span>
+                            <p>Japanese cuisine specialist. Master of umami flavors.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="sec sec-light">
+    <div class="sec-inner">
+        <div class="section-hd reveal">
+            <span class="s-tag">Guest Reviews</span>
+            <h2>What Our <em>Guests Say</em></h2>
+            <p>Real experiences from our valued guests</p>
+        </div>
+        <div class="t-grid">
+            <div class="t-card reveal">
+                <div class="t-stars">⭐⭐⭐⭐⭐</div>
+                <p>"Absolutely the finest dining experience in Riyadh. The Wagyu was divine and the service was impeccable. We will be back for every special occasion!"</p>
+                <div class="t-auth"><div class="t-av">K</div><div><div class="t-name">Khalid Al-Faisal</div><div class="t-loc">Riyadh, Saudi Arabia</div></div></div>
+            </div>
+            <div class="t-card reveal">
+                <div class="t-stars">⭐⭐⭐⭐⭐</div>
+                <p>"The truffle pasta was a revelation! Every detail — from the plating to the wine pairing — showed true mastery. A world-class restaurant in our city!"</p>
+                <div class="t-auth"><div class="t-av">S</div><div><div class="t-name">Sara Al-Otaibi</div><div class="t-loc">Jeddah, Saudi Arabia</div></div></div>
+            </div>
+            <div class="t-card reveal">
+                <div class="t-stars">⭐⭐⭐⭐⭐</div>
+                <p>"We hosted our anniversary dinner here and it was perfect. The private dining room, the food, the ambiance — everything exceeded expectations completely!"</p>
+                <div class="t-auth"><div class="t-av">O</div><div><div class="t-name">Omar & Nora Hassan</div><div class="t-loc">Dubai, UAE</div></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- RESERVATION CTA -->
+<section class="res-cta">
+    <div class="res-cta-bg"></div>
+    <div class="res-cta-overlay"></div>
+    <div class="res-cta-inner reveal">
+        <span class="s-tag">Book Your Experience</span>
+        <h2>Ready for an<br><em>Unforgettable</em> Evening?</h2>
+        <p>Reserve your table today and let us create a dining experience you will treasure forever. Available for lunch and dinner, 7 days a week.</p>
+        <div class="res-btns">
+            <a href="reservations.html" class="btn-gold">Reserve Your Table →</a>
+            <a href="contact.html" class="btn-white">Contact Us</a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-top">
+        <div>
+            <a href="index.html" class="logo" style="display:inline-flex;margin-bottom:14px">
+                <div class="logo-icon">🍽️</div>
+                <div class="logo-text">Saif<span>Dining</span></div>
+            </a>
+            <p class="footer-brand" style="font-size:14px;color:var(--muted);line-height:1.8;margin-top:12px">Riyadh's finest fine dining restaurant. Award-winning cuisine crafted by world-class chefs since 2010.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Navigate</h4>
+            <a href="index.html">Home</a>
+            <a href="menu.html">Our Menu</a>
+            <a href="about.html">About Us</a>
+            <a href="reservations.html">Reservations</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-col">
+            <h4>Experience</h4>
+            <a href="#">Private Dining</a>
+            <a href="#">Wine Cellar</a>
+            <a href="#">Chef's Table</a>
+            <a href="#">Events</a>
+        </div>
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <a href="#">📍 Al Olaya, Riyadh</a>
+            <a href="#">📞 +966 11 000 0000</a>
+            <a href="#">📧 hello@saifdining.sa</a>
+            <a href="#">⏰ Daily 12PM - 11PM</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 <span>Saif Dining</span>. All Rights Reserved.</p>
+        <p>Built by <span>Saiful Islam</span> — Creative Saif</p>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// HERO SLIDER
+let heroSlide = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const dots = document.querySelectorAll('.hero-dot');
+let heroInterval;
+
+function goToSlide(n) {
+    slides[heroSlide].classList.remove('active');
+    dots[heroSlide].classList.remove('active');
+    heroSlide = n;
+    slides[heroSlide].classList.add('active');
+    dots[heroSlide].classList.add('active');
+}
+
+function changeHeroSlide(dir) {
+    let next = heroSlide + dir;
+    if (next >= slides.length) next = 0;
+    if (next < 0) next = slides.length - 1;
+    goToSlide(next);
+    resetInterval();
+}
+
+function resetInterval() {
+    clearInterval(heroInterval);
+    heroInterval = setInterval(() => {
+        let next = heroSlide + 1;
+        if (next >= slides.length) next = 0;
+        goToSlide(next);
+    }, 5000);
+}
+resetInterval();
+</script>
+</body>
+</html>

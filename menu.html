@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Menu — Saif Dining</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<style>
+/* MENU FILTER */
+.menu-filter { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 50px; }
+.mf-btn { padding: 11px 26px; background: var(--card); border: 1px solid var(--border); color: var(--muted); border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.mf-btn.active, .mf-btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+/* MENU SEARCH */
+.menu-search { max-width: 500px; margin: 0 auto 40px; position: relative; }
+.menu-search input { width: 100%; padding: 16px 55px 16px 20px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 14px; font-size: 15px; outline: none; transition: 0.3s; font-family: 'Inter', sans-serif; }
+.menu-search input:focus { border-color: var(--accent); }
+.menu-search input::placeholder { color: var(--muted); }
+.search-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--muted); }
+
+/* MENU GRID */
+.menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+/* MENU ITEM DETAIL MODAL */
+.item-modal { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+.item-modal.show { display: flex; }
+.item-modal-box { background: var(--secondary); border: 1px solid var(--border); border-radius: 24px; max-width: 700px; width: 100%; overflow: hidden; animation: fadeInUp 0.3s ease; }
+.im-img { height: 300px; overflow: hidden; position: relative; }
+.im-img img { width: 100%; height: 100%; object-fit: cover; }
+.im-close { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; color: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.im-body { padding: 32px; }
+.im-tag { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: block; }
+.im-body h3 { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: white; margin-bottom: 12px; }
+.im-body p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; }
+.im-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.im-tag-pill { padding: 4px 14px; background: rgba(200,151,58,0.1); border: 1px solid rgba(200,151,58,0.2); border-radius: 20px; font-size: 12px; color: var(--accent); font-weight: 600; }
+.im-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--border); }
+.im-price { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--accent); }
+
+/* DAILY SPECIAL BANNER */
+.daily-banner { background: linear-gradient(135deg, rgba(200,151,58,0.12), rgba(200,151,58,0.05)); border: 1px solid rgba(200,151,58,0.2); border-radius: 20px; padding: 28px 35px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; flex-wrap: wrap; gap: 20px; }
+.db-left h3 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: white; margin-bottom: 6px; }
+.db-left p { font-size: 14px; color: var(--muted); }
+.db-right { display: flex; align-items: center; gap: 18px; }
+.db-timer { text-align: center; }
+.db-timer .dt-num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--accent); display: block; }
+.db-timer .dt-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.db-sep { font-size: 22px; color: var(--accent); font-weight: 900; }
+
+/* ALLERGEN INFO */
+.allergen-note { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-top: 50px; display: flex; gap: 14px; align-items: flex-start; }
+.an-icon { font-size: 24px; flex-shrink: 0; }
+.an-text h4 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px; }
+.an-text p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+@media (max-width: 768px) {
+    .menu-grid { grid-template-columns: 1fr; }
+    .daily-banner { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CART OVERLAY & DRAWER -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+        <h3>🛒 Your Order</h3>
+        <button class="cart-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">SAR 0.00</span></div>
+        <div class="cart-subtotal"><span>Delivery</span><span style="color:var(--green)">Free over SAR 150</span></div>
+        <div class="cart-total"><span>Total</span><span id="cartTotal">SAR 0.00</span></div>
+        <button class="checkout-btn" onclick="showToast('✅ Order placed! We will contact you shortly.')">Place Order 🍽️</button>
+    </div>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="item-modal" id="itemModal">
+    <div class="item-modal-box">
+        <div class="im-img">
+            <img id="modalImg" src="" alt="">
+            <button class="im-close" onclick="closeItemModal()">✕</button>
+        </div>
+        <div class="im-body">
+            <span class="im-tag" id="modalTag"></span>
+            <h3 id="modalName"></h3>
+            <p id="modalDesc"></p>
+            <div class="im-tags" id="modalTags"></div>
+            <div class="im-footer">
+                <span class="im-price" id="modalPrice"></span>
+                <button class="btn-gold" id="modalAddBtn">Add to Order +</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+    <div class="nav-inner">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">🍽️</div>
+            <div class="logo-text">Saif<span>Dining</span></div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="reservations.html">Reservations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div style="display:flex;gap:12px;align-items:center">
+            <button onclick="openCart()" style="position:relative;background:rgba(200,151,58,0.1);border:1px solid rgba(200,151,58,0.25);color:var(--accent);padding:10px 18px;border-radius:25px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:0.3s">
+                🛒 Cart
+                <span class="cart-count" style="background:var(--accent);color:var(--bg);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center"></span>
+            </button>
+            <a href="reservations.html" class="nav-cta">Reserve Table</a>
+        </div>
+    </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+    <div class="page-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&auto=format&fit=crop&q=80')"></div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+        <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span class="current">Menu</span></div>
+        <h1>Our <span class="gold">Menu</span></h1>
+        <p>Explore our carefully curated selection of dishes crafted with the world's finest ingredients</p>
+    </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+    <div class="marquee-inner">
+        <span class="marquee-item">Starters</span>
+        <span class="marquee-item">Main Courses</span>
+        <span class="marquee-item">Desserts</span>
+        <span class="marquee-item">Beverages</span>
+        <span class="marquee-item">Chef Specials</span>
+        <span class="marquee-item">Starters</span>
+        <span class="marquee-item">Main Courses</span>
+        <span class="marquee-item">Desserts</span>
+        <span class="marquee-item">Beverages</span>
+        <span class="marquee-item">Chef Specials</span>
+    </div>
+</div>
+
+<!-- MENU SECTION -->
+<section class="sec sec-light">
+    <div class="sec-inner">
+
+        <!-- DAILY SPECIAL -->
+        <div class="daily-banner reveal">
+            <div class="db-left">
+                <h3>🌟 Today's Special — Rack of Lamb</h3>
+                <p>New Zealand rack of lamb with rosemary jus and roasted root vegetables • SAR 245</p>
+            </div>
+            <div class="db-right">
+                <div class="db-timer"><span class="dt-num" id="dHours">00</span><span class="dt-label">Hours</span></div>
+                <span class="db-sep">:</span>
+                <div class="db-timer"><span class="dt-num" id="dMins">00</span><span class="dt-label">Mins</span></div>
+                <span class="db-sep">:</span>
+                <div class="db-timer"><span class="dt-num" id="dSecs">00</span><span class="dt-label">Secs</span></div>
+                <button class="btn-gold" onclick="addToCart('Rack of Lamb Special', 245, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200')">Order Now</button>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="menu-search reveal">
+            <input type="text" id="menuSearch" placeholder="🔍 Search dishes..." oninput="searchMenu()">
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- FILTER -->
+        <div class="menu-filter reveal">
+            <button class="mf-btn active" onclick="filterMenu('all', this)">All</button>
+            <button class="mf-btn" onclick="filterMenu('starters', this)">Starters</button>
+            <button class="mf-btn" onclick="filterMenu('mains', this)">Main Courses</button>
+            <button class="mf-btn" onclick="filterMenu('seafood', this)">Seafood</button>
+            <button class="mf-btn" onclick="filterMenu('desserts', this)">Desserts</button>
+            <button class="mf-btn" onclick="filterMenu('beverages', this)">Beverages</button>
+        </div>
+
+        <!-- MENU GRID -->
+        <div class="menu-grid" id="menuGrid"></div>
+
+        <!-- ALLERGEN NOTE -->
+        <div class="allergen-note">
+            <span class="an-icon">ℹ️</span>
+            <div class="an-text">
+                <h4>Allergen Information</h4>
+                <p>Some dishes may contain nuts, gluten, dairy or shellfish. Please inform your server of any allergies or dietary requirements before ordering. Our team will be happy to accommodate you.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-top">
+        <div>
+            <a href="index.html" class="logo" style="display:inline-flex;margin-bottom:14px"><div class="logo-icon">🍽️</div><div class="logo-text">Saif<span>Dining</span></div></a>
+            <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-top:12px">Riyadh's finest fine dining. Award-winning cuisine since 2010.</p>
+        </div>
+        <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="reservations.html">Reservations</a><a href="contact.html">Contact</a></div>
+        <div class="footer-col"><h4>Hours</h4><a href="#">Mon-Thu: 12PM-11PM</a><a href="#">Fri-Sat: 12PM-12AM</a><a href="#">Sunday: 1PM-10PM</a></div>
+        <div class="footer-col"><h4>Contact</h4><a href="#">📍 Al Olaya, Riyadh</a><a href="#">📞 +966 11 000 0000</a><a href="#">📧 hello@saifdining.sa</a></div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 <span>Saif Dining</span>. All Rights Reserved.</p>
+        <p>Built by <span>Saiful Islam</span> — Creative Saif</p>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// MENU DATA
+const menuData = [
+    { id: 1, name: 'Tuna Tartare', category: 'starters', price: 85, img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80', badge: 'Popular', badgeClass: 'badge-popular', desc: 'Yellowfin tuna with avocado, sesame oil and ponzu dressing.', tags: ['Gluten Free', 'Fresh', 'Japanese'], allergens: 'Contains: Fish, Sesame' },
+    { id: 2, name: 'Burrata & Heirloom Tomato', category: 'starters', price: 75, img: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&auto=format&fit=crop&q=80', badge: 'Veg', badgeClass: 'badge-veg', desc: 'Creamy burrata with heirloom tomatoes, basil oil and aged balsamic.', tags: ['Vegetarian', 'Italian', 'Light'], allergens: 'Contains: Dairy' },
+    { id: 3, name: 'Wagyu Carpaccio', category: 'starters', price: 120, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80', badge: "Chef's", badgeClass: 'badge-chef', desc: 'Paper-thin A5 Wagyu with truffle shavings and parmesan.', tags: ["Chef's Choice", 'Premium', 'Japanese'], allergens: 'Contains: Dairy' },
+    { id: 4, name: 'Japanese A5 Wagyu', category: 'mains', price: 285, img: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80', badge: "Chef's", badgeClass: 'badge-chef', desc: 'Premium A5 Wagyu with truffle jus and roasted vegetables.', tags: ['Premium', 'Signature', 'Japanese'], allergens: 'No major allergens' },
+    { id: 5, name: 'Rack of Lamb', category: 'mains', price: 245, img: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&auto=format&fit=crop&q=80', badge: 'New', badgeClass: 'badge-new', desc: 'New Zealand rack of lamb with rosemary jus and root vegetables.', tags: ['New', 'Halal', 'French'], allergens: 'No major allergens' },
+    { id: 6, name: 'Duck Confit', category: 'mains', price: 195, img: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&auto=format&fit=crop&q=80', badge: 'Popular', badgeClass: 'badge-popular', desc: 'Slow-cooked duck leg with cherry sauce and pommes sarladaises.', tags: ['French', 'Classic', 'Rich'], allergens: 'Contains: Gluten' },
+    { id: 7, name: 'Butter Poached Lobster', category: 'seafood', price: 320, img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&auto=format&fit=crop&q=80', badge: 'Popular', badgeClass: 'badge-popular', desc: 'Atlantic lobster tail with saffron bisque and caviar.', tags: ['Premium', 'Seafood', 'French'], allergens: 'Contains: Shellfish, Dairy' },
+    { id: 8, name: 'Pan Seared Sea Bass', category: 'seafood', price: 175, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&auto=format&fit=crop&q=80', badge: "Chef's", badgeClass: 'badge-chef', desc: 'Chilean sea bass with lemon beurre blanc and asparagus.', tags: ['Seafood', 'Light', 'Mediterranean'], allergens: 'Contains: Fish, Dairy' },
+    { id: 9, name: 'King Prawn Risotto', category: 'seafood', price: 155, img: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600&auto=format&fit=crop&q=80', badge: 'New', badgeClass: 'badge-new', desc: 'Carnaroli risotto with king prawns, saffron and parmesan.', tags: ['Italian', 'Seafood', 'Creamy'], allergens: 'Contains: Shellfish, Dairy, Gluten' },
+    { id: 10, name: 'Valrhona Chocolate Fondant', category: 'desserts', price: 65, img: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&auto=format&fit=crop&q=80', badge: 'Popular', badgeClass: 'badge-popular', desc: 'Warm chocolate fondant with vanilla bean ice cream.', tags: ['Chocolate', 'Warm', 'Classic'], allergens: 'Contains: Dairy, Eggs, Gluten' },
+    { id: 11, name: 'Crème Brûlée', category: 'desserts', price: 55, img: 'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?w=600&auto=format&fit=crop&q=80', badge: 'Classic', badgeClass: 'badge-chef', desc: 'Classic vanilla crème brûlée with caramelized sugar crust.', tags: ['French', 'Classic', 'Vanilla'], allergens: 'Contains: Dairy, Eggs' },
+    { id: 12, name: 'Fresh Lemonade', category: 'beverages', price: 25, img: 'https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=600&auto=format&fit=crop&q=80', badge: 'Fresh', badgeClass: 'badge-veg', desc: 'Freshly squeezed lemonade with mint and honey.', tags: ['Non-Alcoholic', 'Fresh', 'Refreshing'], allergens: 'No allergens' },
+    { id: 13, name: 'Arabic Coffee & Dates', category: 'beverages', price: 35, img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop&q=80', badge: 'Traditional', badgeClass: 'badge-chef', desc: 'Traditional Qahwa Arabic coffee served with Medjool dates.', tags: ['Traditional', 'Arabic', 'Signature'], allergens: 'No allergens' },
+    { id: 14, name: 'Black Truffle Pasta', category: 'mains', price: 195, img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&auto=format&fit=crop&q=80', badge: 'New', badgeClass: 'badge-new', desc: 'Handmade tagliolini with shaved black truffle and parmesan.', tags: ['Italian', 'Premium', 'Vegetarian'], allergens: 'Contains: Gluten, Dairy, Eggs' },
+    { id: 15, name: 'Foie Gras Torchon', category: 'starters', price: 145, img: 'https://images.unsplash.com/photo-1484980972926-edee96e0960d?w=600&auto=format&fit=crop&q=80', badge: "Chef's", badgeClass: 'badge-chef', desc: 'Duck foie gras with brioche, fig jam and aged balsamic reduction.', tags: ['French', 'Luxury', 'Premium'], allergens: 'Contains: Dairy, Gluten, Eggs' }
+];
+
+let filteredMenu = [...menuData];
+let currentFilter = 'all';
+let currentItem = null;
+
+// RENDER MENU
+function renderMenu(items) {
+    const grid = document.getElementById('menuGrid');
+    if (items.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)"><div style="font-size:50px;margin-bottom:16px">🍽️</div><p>No dishes found. Try a different search.</p></div>`;
+        return;
+    }
+    grid.innerHTML = items.map(item => `
+        <div class="dish-card" style="animation:fadeInUp 0.4s ease" onclick="openItemModal(${item.id})">
+            <div class="dish-img">
+                <img src="${item.img}" alt="${item.name}" loading="lazy">
+                <span class="dish-badge ${item.badgeClass}">${item.badge}</span>
+            </div>
+            <div class="dish-info">
+                <h3>${item.name}</h3>
+                <p class="dish-desc">${item.desc}</p>
+                <div class="dish-footer">
+                    <span class="dish-price">SAR ${item.price}</span>
+                    <button class="dish-add" onclick="event.stopPropagation();addToCart('${item.name}', ${item.price}, '${item.img}')">+</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// FILTER
+function filterMenu(cat, btn) {
+    document.querySelectorAll('.mf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = cat;
+    applyFilters();
+}
+
+// SEARCH
+function searchMenu() {
+    applyFilters();
+}
+
+function applyFilters() {
+    const query = document.getElementById('menuSearch').value.toLowerCase();
+    filteredMenu = menuData.filter(item => {
+        const matchCat = currentFilter === 'all' || item.category === currentFilter;
+        const matchSearch = item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query);
+        return matchCat && matchSearch;
+    });
+    renderMenu(filteredMenu);
+}
+
+// ITEM MODAL
+function openItemModal(id) {
+    currentItem = menuData.find(i => i.id === id);
+    if (!currentItem) return;
+    document.getElementById('modalImg').src = currentItem.img;
+    document.getElementById('modalTag').textContent = currentItem.category.toUpperCase();
+    document.getElementById('modalName').textContent = currentItem.name;
+    document.getElementById('modalDesc').textContent = currentItem.desc + ' ' + currentItem.allergens;
+    document.getElementById('modalPrice').textContent = 'SAR ' + currentItem.price;
+    document.getElementById('modalTags').innerHTML = currentItem.tags.map(t => `<span class="im-tag-pill">${t}</span>`).join('');
+    document.getElementById('modalAddBtn').onclick = () => {
+        addToCart(currentItem.name, currentItem.price, currentItem.img);
+        closeItemModal();
+        openCart();
+    };
+    document.getElementById('itemModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeItemModal() {
+    document.getElementById('itemModal').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('itemModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('itemModal')) closeItemModal();
+});
+
+// DAILY SPECIAL TIMER
+function updateDailyTimer() {
+    const now = new Date();
+    const end = new Date();
+    end.setHours(23, 59, 59, 0);
+    const diff = end - now;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('dHours').textContent = String(h).padStart(2, '0');
+    document.getElementById('dMins').textContent = String(m).padStart(2, '0');
+    document.getElementById('dSecs').textContent = String(s).padStart(2, '0');
+}
+updateDailyTimer();
+setInterval(updateDailyTimer, 1000);
+
+// INIT
+renderMenu(menuData);
+</script>
+</body>
+</html>
